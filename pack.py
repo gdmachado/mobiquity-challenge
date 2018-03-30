@@ -113,8 +113,6 @@ class Packer(object):
         # Solve the problem using Dynamic Programming
         self.solve()
 
-        print(self)
-
     def solve(self):
         """
         Solve the knapsack problem using Dynamic Programming.
@@ -184,3 +182,4 @@ if __name__ == '__main__':
     for info in Packer.parse_file(filename):
         packer = Packer()
         packer.pack(info)
+        print(packer)
