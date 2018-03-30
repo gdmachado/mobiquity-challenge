@@ -31,8 +31,24 @@ class Packer(object):
             self.num_available_items = 0
         else:
             input_info = self.parse_input_row(row)
+
+            # Check for max weight constraint
+            if input_info[0] > 100 * 100:
+                raise APIException('Package weight must not be over 100')
+
+            # Check for package's number of items constraint
+            if len(input_info[1]) > 15:
+                raise APIException(
+                    'Package\'s number of avalable items must not be over 15')
+
+            # Check for package items' weight and cost constraint
+            for item in input_info[1]:
+                if item[1] > 100 * 100 or item[2] > 100:
+                    raise APIException(
+                        'Max weight and cost of an item must not be over 100')
+
             self.max_weight = input_info[0]
-            self.available_items = input_info[1]
+            self.available_items = list(input_info[1])
             self.num_available_items = len(input_info[1])
 
     @classmethod
@@ -90,21 +106,6 @@ class Packer(object):
 
         Implementation of the dynamic programming algorithm is performed here.
         """
-        # Check for max weight constraint
-        if package_info[0] > 100 * 100:
-            raise APIException('Package weight must not be over 100')
-
-        # Check for package's number of items constraint
-        if len(package_info[1]) > 15:
-            raise APIException(
-                'Package\'s number of avalable items must not be over 15')
-
-        # Check for package items' weight and cost constraint
-        for item in package_info[1]:
-            if item[1] > 100 * 100 or item[2] > 100:
-                raise APIException(
-                    'Max weight and cost of an item must not be over 100')
-
         self.max_weight = package_info[0]
         for item in package_info[1]:
             self.available_append(item)
