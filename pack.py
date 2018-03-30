@@ -18,50 +18,68 @@ class APIException(Exception):
 class Packer(object):
     """Main Packer class."""
 
-    def __init__(self):
+    def __init__(self, row=None):
         """Items expects tuples in the form of (index, weight, cost)."""
-        self.available_items = []
         self.inserted_items = []
-        self.num_available_items = 0
         self.num_inserted_items = 0
-        self.max_weight = 10000
         self.total_weight = 0
         self.total_value = 0
 
-    @staticmethod
-    def parse_value(value):
-        """Parse values in the form of '€100'."""
-        return int(value.replace('€', ''))
+        if row is None:
+            self.max_weight = 10000
+            self.available_items = []
+            self.num_available_items = 0
+        else:
+            input_info = self.parse_input_row(row)
+            self.max_weight = input_info[0]
+            self.available_items = input_info[1]
+            self.num_available_items = len(input_info[1])
 
-    @staticmethod
-    def parse_file(file_path):
+    @classmethod
+    def parse_file(cls, file_path):
         """
         Parse input files.
 
-        Uses regex to extract each piece of information from each row
-        Returns a tuple in the form of (package_weight, (thing, thing, ...))
+        Iterate through input file, yielding the final input information in
+        the form of (package_weight, (thing, thing, ...)).
+        """
+        with open(file_path, 'r+') as file:
+            for row in file:
+                yield cls.parse_input_row(row)
+
+    @staticmethod
+    def parse_input_row(row):
+        """
+        Parse a row from input file.
+
+        Uses regex to extract each piece of information from each row.
         This converts given weight into integer form by multiplying by 100, to
         make it possible for us to use the dynamic programming solution.
+
+        Expect rows in the form of:
+            package_weight : (item_id,item_weight,item_value)
+        Example:
+            50 : (1,10,€60) (2,20,€100) (3,30,€100)
         """
         package_weight_re = re.compile(r'^[0-9.]+')
         things_re = re.compile(r'\(([0-9]+),([0-9.]+),€([0-9]+)\)')
 
-        with open(file_path, 'r+') as file:
-            for row in file:
-                package_weight = int(
-                    float(package_weight_re.findall(row)[0]) * 100)
-                things = tuple((int(x[0]), int(float(x[1]) * 100), int(x[2]))
-                               for x in things_re.findall(row))
-                yield (package_weight, things)
+        package_weight = int(float(package_weight_re.findall(row)[0]) * 100)
+        things = tuple((int(x[0]), int(float(x[1]) * 100), int(x[2]))
+                       for x in things_re.findall(row))
+
+        return (package_weight, things)
 
     def available_append(self, item):
         """Simply add a new item to the list of available items."""
         self.available_items.append(item)
+        self.available_items.sort()
         self.num_available_items += 1
 
     def inserted_append(self, item):
         """Add a new item onto the inserted items list, update totals."""
         self.inserted_items.append(item)
+        self.inserted_items.sort()
         self.num_inserted_items += 1
         self.total_weight += item[1]
         self.total_value += item[2]
@@ -95,10 +113,6 @@ class Packer(object):
         self.solve()
 
         print(self)
-
-        # print(A[self.num_available_items][self.max_weight])
-        # print(A)
-        # print(self.inserted_items)
 
     def solve(self):
         """
@@ -142,9 +156,8 @@ class Packer(object):
         j = self.max_weight
 
         while i > 0:
-            if (items[i - 1][1] <= w
-                    and A[i][j] - A[i - 1][j - items[i - 1][1]]
-                    == items[i - 1][2]):
+            if (items[i - 1][1] <= w and A[i][j] -
+                    A[i - 1][j - items[i - 1][1]] == items[i - 1][2]):
                 # when it's determined that item is in package, append it
                 # to inserted items list
                 self.inserted_append(items[i - 1])
