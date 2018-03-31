@@ -20,19 +20,20 @@ class APIException(Exception):
 class Packer(object):
     """Main Packer class."""
 
-    def __init__(self, row=None):
+    def __init__(self, input_info=None):
         """Items expects tuples in the form of (index, weight, cost)."""
         self.inserted_items = []
+        self.available_items = []
         self.num_inserted_items = 0
+        self.num_available_items = 0
         self.total_weight = 0
         self.total_value = 0
 
-        if row is None:
+        if input_info is None:
             self.max_weight = 10000
-            self.available_items = []
-            self.num_available_items = 0
         else:
-            input_info = self.parse_input_row(row)
+            if isinstance(input_info, str):
+                input_info = self.parse_input_row(input_info)
 
             # Check for max weight constraint
             if input_info[0] > 100 * 100:
@@ -48,10 +49,9 @@ class Packer(object):
                 if item[1] > 100 * 100 or item[2] > 100:
                     raise APIException(
                         'Max weight and cost of an item must not be over 100')
+                self.available_append(item)
 
             self.max_weight = input_info[0]
-            self.available_items = list(input_info[1])
-            self.num_available_items = len(input_info[1])
 
     @classmethod
     def parse_file(cls, file_path):
@@ -102,18 +102,19 @@ class Packer(object):
         self.total_weight += item[1]
         self.total_value += item[2]
 
-    def pack(self, package_info):
+    @staticmethod
+    def pack(input_file):
         """
         Perform solution for the knapsack problem.
 
         Implementation of the dynamic programming algorithm is performed here.
         """
-        self.max_weight = package_info[0]
-        for item in package_info[1]:
-            self.available_append(item)
+        for info in Packer.parse_file(input_file):
+            # Solve the problem using Dynamic Programming
+            packer = Packer(info)
+            packer.solve()
 
-        # Solve the problem using Dynamic Programming
-        self.solve()
+            yield packer
 
     def solve(self):
         """
@@ -181,7 +182,5 @@ class Packer(object):
 if __name__ == '__main__':
     filename = sys.argv[1]
 
-    for info in Packer.parse_file(filename):
-        packer = Packer()
-        packer.pack(info)
-        print(packer)
+    for package in Packer.pack(filename):
+        print(package)
