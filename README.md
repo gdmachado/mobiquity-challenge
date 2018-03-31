@@ -6,6 +6,10 @@ This is my proposed solution for the challenge sent to me during the application
 
 Make sure you have Python 3.x installed. The pack.py file is executable, and looks for `python3` in `/usr/bin/env`.
 
+Also, for running the tests suite, you need `pytest` installed:
+
+    $ pip3 install -U pytest
+
 ### Running tests suite
 
     $ py.test -v
