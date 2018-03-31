@@ -4,6 +4,14 @@ This is my proposed solution for the challenge sent to me during the application
 
 ## Usage
 
+Make sure you have Python 3.x installed. The pack.py file is executable, and looks for `python3` in `/usr/bin/env`.
+
+### Running tests suite
+
+    $ py.test -v
+
+### Running solution over input_file
+
     $ ./pack.py input_filename
 
 ## My proposed solution
@@ -15,6 +23,8 @@ We will use a [Dynamic Programming](https://en.wikipedia.org/wiki/Dynamic_progra
 For the problem to be solved using Dynamic Programming, all weights need to be a non-negative integer, so we will multiply all weights by 100.
 
 I have altered a detail from one of the original constraints for structural's sake. Basically, the `pack` method  inside my `Packer` class will not accept the absolute path for the input file (as originally requested), but instead will expect a tuple containing all details about the package in question and it's things. The logic for looping through all of the input's files and parsing each row will be done outside of the class, within the `main` method.
+
+Also, the solution is implemented and expects to be ran in Python 3.
 
 ## The challenge
 
